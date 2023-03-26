@@ -1,0 +1,53 @@
+# This is an automatically generated file
+items:
+- name: Docs
+  href: index.md
+- name: Api
+  href: api/index.md
+  items:
+  - name: Api
+    href: api/index.md
+- name: Articles
+  href: articles/intro.md
+  items:
+  - name: Add your introductions here!
+    href: articles/intro.md
+- name: Dataverse
+  href: dataverse/index.md
+  items:
+  - name: Dataverse
+    href: dataverse/index.md
+- name: Power Apps
+  href: power-apps/index.md
+  items:
+  - name: Power Apps
+    href: power-apps/index.md
+  - name: Power Apps page 1
+    href: power-apps/page1.md
+  - name: Power Apps page 2
+    href: power-apps/page2.md
+  - name: Power Apps page 3
+    href: power-apps/page3.md
+  - name: Samples
+    href: power-apps/samples/index.md
+    items:
+    - name: Samples
+      href: power-apps/samples/index.md
+    - name: Power Apps sample 1
+      href: power-apps/samples/sample1.md
+    - name: Power Apps sample 1
+      href: power-apps/samples/sample2.md
+  - name: Standards
+    href: power-apps/standards/standard1.md
+    items:
+    - name: Power Apps standard 1
+      href: power-apps/standards/standard1.md
+    - name: Power Apps standard 1
+      href: power-apps/standards/standard2.md
+    - name: Power Apps standard 1
+      href: power-apps/standards/standard3.md
+- name: Power Automate
+  href: power-automate/index.md
+  items:
+  - name: Power Automate
+    href: power-automate/index.md

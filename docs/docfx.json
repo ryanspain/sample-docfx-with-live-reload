@@ -1,0 +1,56 @@
+{
+  "metadata": [
+    {
+      "src": [
+        {
+          "files": [
+            "src/**.csproj"
+          ]
+        }
+      ],
+      "dest": "api",
+      "includePrivateMembers": false,
+      "disableGitFeatures": false,
+      "disableDefaultFilter": false,
+      "noRestore": false,
+      "namespaceLayout": "flattened"
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": [
+          "**/*.{md,yml}"
+        ],
+        "exclude": []
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          ".attachments/**"
+        ]
+      }
+    ],
+    "overwrite": [
+      {
+        "files": [],
+        "exclude": []
+      }
+    ],
+    "dest": "../dist",
+    "globalMetadata": {
+      "_enableSearch": "true"
+    },
+    "postProcessors": [ "ExtractSearchIndex" ],
+    "globalMetadataFiles": [],
+    "fileMetadataFiles": [],
+    "template": [
+      "default",
+      "../templates/modern"
+    ],
+    "noLangKeyword": false,
+    "keepFileLink": false,
+    "disableGitFeatures": false
+  }
+}

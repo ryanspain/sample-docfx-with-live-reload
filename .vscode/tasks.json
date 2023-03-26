@@ -1,0 +1,31 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Setup",
+            "type": "shell",
+            "command": "npm run setup",
+            "problemMatcher": []
+        },
+        {
+            "label": "Clean",
+            "type": "shell",
+            "command": "npm run clean",
+            "problemMatcher": []
+        },
+        {
+            "label": "Build",
+            "type": "shell",
+            "command": "npm run build",
+            "problemMatcher": [],
+            "dependsOn": "Clean"
+        },
+        {
+            "label": "Preview",
+            "type": "shell",
+            "command": "npm run preview",
+            "problemMatcher": [],
+            "dependsOn": "Build"
+        }
+    ]
+}
