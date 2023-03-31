@@ -3,11 +3,11 @@
     "version": "1.0.0",
     "scripts": {
         "clean": "if exist dist rmdir /s /q dist",
-        "setup": "npm-run-all -p -c install-docfx install-npm-packages",
+        "presetup": "npm install",
+        "setup": "npm-run-all -p -c install-docfx",
         "build": "npm run generate-toc && docfx docs/docfx.json",
         "preview": "npm-run-all -p -c start-nodemon start-browser-sync",
-        "install-docfx": "dotnet tool install -g docfx",
-        "install-npm-packages": "npm install",
+        "install-docfx": "dotnet tool update -g docfx",
         "start-nodemon": "nodemon --on-change-only",
         "start-browser-sync": "browser-sync start",
         "generate-toc": ".\\lib\\DocFxTocGenerator.exe -d docs -o docs -s -r"
