@@ -2,15 +2,14 @@
     "name": "sample-docfx-with-live-reload",
     "version": "1.0.0",
     "scripts": {
-        "clean": "if exist dist rmdir /s /q dist",
-        "setup": "npm-run-all -p -c install-docfx install-npm-packages",
-        "build": "npm run generate-toc && docfx docs/docfx.json",
+        "clean": "rimraf dist",
+        "presetup": "npm install",
+        "setup": "dotnet tool restore",
+        "build": "npm run generate-toc && dotnet docfx docs/docfx.json",
         "preview": "npm-run-all -p -c start-nodemon start-browser-sync",
-        "install-docfx": "dotnet tool install -g docfx",
-        "install-npm-packages": "npm install",
         "start-nodemon": "nodemon --on-change-only",
         "start-browser-sync": "browser-sync start",
-        "generate-toc": ".\\lib\\DocFxTocGenerator.exe -d docs -o docs -s -r"
+        "generate-toc": "dotnet DocFxTocGenerator -- -d docs -o docs -s -r"
     },
     "nodemonConfig": {
         "watch": [
@@ -20,7 +19,7 @@
             "dist/"
         ],
         "ext": "*",
-        "exec": "docfx docs/docfx.json"
+        "exec": "dotnet docfx docs/docfx.json"
     },
     "browser-sync": {
         "server": {
@@ -32,8 +31,9 @@
         "open": true
     },
     "devDependencies": {
-        "nodemon": "^2.0.22",
         "browser-sync": "^2.29.1",
-        "npm-run-all": "^4.1.5"
+        "nodemon": "^2.0.22",
+        "npm-run-all": "^4.1.5",
+        "rimraf": "^4.4.1"
     }
 }

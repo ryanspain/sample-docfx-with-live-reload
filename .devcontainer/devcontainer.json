@@ -1,0 +1,18 @@
+{
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:18-bullseye",
+    "features": {
+        "ghcr.io/devcontainers/features/dotnet:1": {
+            "version": "6"
+        }
+    },
+    "remoteEnv": {
+        "DOTNET_NOLOGO": "1",
+        "DOTNET_ROLL_FORWARD": "Major"
+    },
+    "mounts": [
+        // Mount a volume for the node_modules, it improves performance significantly
+        "source=${localWorkspaceFolderBasename}-node_modules,target=${containerWorkspaceFolder}/node_modules,type=volume"
+    ],
+    "forwardPorts": [ 3000, 8080 ],
+    "onCreateCommand": "sudo chown -R $USER:$USER ./node_modules && npm run setup"
+}
