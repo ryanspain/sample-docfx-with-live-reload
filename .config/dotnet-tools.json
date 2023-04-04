@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "docfx": {
+      "version": "2.64.0",
+      "commands": [
+        "docfx"
+      ]
+    },
+    "docfxopenapi": {
+      "version": "1.9.0",
+      "commands": [
+        "DocFxOpenApi"
+      ]
+    },
+    "docfxtocgenerator": {
+      "version": "1.9.0",
+      "commands": [
+        "DocFxTocGenerator"
+      ]
+    },
+    "doclanguagetranslator": {
+      "version": "1.9.0",
+      "commands": [
+        "DocLanguageTranslator"
+      ]
+    },
+    "doclinkchecker": {
+      "version": "1.9.0",
+      "commands": [
+        "DocLinkChecker"
+      ]
+    }
+  }
+}
