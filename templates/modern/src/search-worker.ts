@@ -1,80 +1,117 @@
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 import lunr from 'lunr'
+import stemmer from 'lunr-languages/lunr.stemmer.support'
+import tinyseg from 'lunr-languages/tinyseg'
+import multi from 'lunr-languages/lunr.multi'
+import { get, set, createStore } from 'idb-keyval'
 
-let lunrIndex
-
-let stopWords = null
-let searchData = {}
-
-lunr.tokenizer.separator = /[\s\-.()]+/
-
-const stopWordsRequest = new XMLHttpRequest()
-stopWordsRequest.open('GET', '../search-stopwords.json')
-stopWordsRequest.onload = function() {
-  if (this.status !== 200) {
-    return
-  }
-  stopWords = JSON.parse(this.responseText)
-  buildIndex()
+type SearchHit = {
+  href: string
+  title: string
+  keywords: string
 }
-stopWordsRequest.send()
 
-const searchDataRequest = new XMLHttpRequest()
+let search: (q: string) => SearchHit[]
 
-searchDataRequest.open('GET', '../index.json')
-searchDataRequest.onload = function() {
-  if (this.status !== 200) {
-    return
-  }
-  searchData = JSON.parse(this.responseText)
-
-  buildIndex()
-
+async function loadIndex({ lunrLanguages }: { lunrLanguages?: string[] }) {
+  const { index, data } = await loadIndexCore()
+  search = q => index.search(q).map(({ ref }) => data[ref])
   postMessage({ e: 'index-ready' })
-}
-searchDataRequest.send()
 
-onmessage = function(oEvent) {
-  const q = oEvent.data.q
-  const hits = lunrIndex.search(q)
-  const results = []
-  hits.forEach(function(hit) {
-    const item = searchData[hit.ref]
-    results.push({ href: item.href, title: item.title, keywords: item.keywords })
-  })
-  postMessage({ e: 'query-ready', q, d: results })
-}
+  async function loadIndexCore() {
+    const res = await fetch('../index.json')
+    const etag = res.headers.get('etag')
+    const data = await res.json() as { [key: string]: SearchHit }
+    const cache = createStore('docfx', 'lunr')
 
-function buildIndex() {
-  if (stopWords !== null && !isEmpty(searchData)) {
-    lunrIndex = lunr(function() {
-      this.pipeline.remove(lunr.stopWordFilter)
+    if (lunrLanguages && lunrLanguages.length > 0) {
+      multi(lunr)
+      stemmer(lunr)
+      if (lunrLanguages.includes('ja')) {
+        tinyseg(lunr)
+      }
+      await Promise.all(lunrLanguages.map(initLanguage))
+    }
+
+    if (etag) {
+      const value = JSON.parse(await get('index', cache) || '{}')
+      if (value && value.etag === etag) {
+        return { index: lunr.Index.load(value), data }
+      }
+    }
+
+    const index = lunr(function() {
+      lunr.tokenizer.separator = /[\s\-.()]+/
+
       this.ref('href')
       this.field('title', { boost: 50 })
       this.field('keywords', { boost: 20 })
 
-      for (const prop in searchData) {
-        if (Object.prototype.hasOwnProperty.call(searchData, prop)) {
-          this.add(searchData[prop])
-        }
+      if (lunrLanguages && lunrLanguages.length > 0) {
+        this.use(lunr.multiLanguage(...lunrLanguages))
       }
 
-      const docfxStopWordFilter = lunr.generateStopWordFilter(stopWords)
-      lunr.Pipeline.registerFunction(docfxStopWordFilter, 'docfxStopWordFilter')
-      this.pipeline.add(docfxStopWordFilter)
-      this.searchPipeline.add(docfxStopWordFilter)
+      for (const key in data) {
+        this.add(data[key])
+      }
     })
+
+    if (etag) {
+      await set('index', JSON.stringify(Object.assign(index.toJSON(), { etag })), cache)
+    }
+
+    return { index, data }
   }
 }
 
-function isEmpty(obj) {
-  if (!obj) return true
-
-  for (const prop in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, prop)) { return false }
+onmessage = function(e) {
+  if (e.data.q && search) {
+    postMessage({ e: 'query-ready', d: search(e.data.q) })
+  } else if (e.data.init) {
+    loadIndex(e.data.init).catch(console.error)
   }
+}
 
-  return true
+const langMap = {
+  ar: () => import('lunr-languages/lunr.ar.js'),
+  da: () => import('lunr-languages/lunr.da.js'),
+  de: () => import('lunr-languages/lunr.de.js'),
+  du: () => import('lunr-languages/lunr.du.js'),
+  el: () => import('lunr-languages/lunr.el.js'),
+  es: () => import('lunr-languages/lunr.es.js'),
+  fi: () => import('lunr-languages/lunr.fi.js'),
+  fr: () => import('lunr-languages/lunr.fr.js'),
+  he: () => import('lunr-languages/lunr.he.js'),
+  hi: () => import('lunr-languages/lunr.hi.js'),
+  hu: () => import('lunr-languages/lunr.hu.js'),
+  hy: () => import('lunr-languages/lunr.hy.js'),
+  it: () => import('lunr-languages/lunr.it.js'),
+  ja: () => import('lunr-languages/lunr.ja.js'),
+  jp: () => import('lunr-languages/lunr.jp.js'),
+  kn: () => import('lunr-languages/lunr.kn.js'),
+  ko: () => import('lunr-languages/lunr.ko.js'),
+  nl: () => import('lunr-languages/lunr.nl.js'),
+  no: () => import('lunr-languages/lunr.no.js'),
+  pt: () => import('lunr-languages/lunr.pt.js'),
+  ro: () => import('lunr-languages/lunr.ro.js'),
+  ru: () => import('lunr-languages/lunr.ru.js'),
+  sa: () => import('lunr-languages/lunr.sa.js'),
+  sv: () => import('lunr-languages/lunr.sv.js'),
+  ta: () => import('lunr-languages/lunr.ta.js'),
+  te: () => import('lunr-languages/lunr.te.js'),
+  th: () => import('lunr-languages/lunr.th.js'),
+  tr: () => import('lunr-languages/lunr.tr.js'),
+  vi: () => import('lunr-languages/lunr.vi.js')
+
+  // zh is currently not supported due to dependency on NodeJS.
+  // zh: () => import('lunr-languages/lunr.zh.js')
+}
+
+async function initLanguage(lang: string) {
+  if (lang !== 'en') {
+    const { default: init } = await langMap[lang]()
+    init(lunr)
+  }
 }

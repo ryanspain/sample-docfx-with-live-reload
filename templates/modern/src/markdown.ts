@@ -1,22 +1,75 @@
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-import { breakWord } from './helper'
-import AnchorJs from 'anchor-js'
+import { breakWord, meta, loc, options } from './helper'
 import { html, render } from 'lit-html'
+import { getTheme, onThemeChange } from './theme'
 
 /**
  * Initialize markdown rendering.
  */
-export function renderMarkdown() {
+export async function renderMarkdown() {
   renderWordBreaks()
   renderTables()
   renderAlerts()
   renderLinks()
   renderTabs()
-  renderAnchor()
   renderCodeCopy()
-  renderClickableImage()
+
+  await Promise.all([
+    renderClickableImage(),
+    renderMath(),
+    renderMermaid()
+  ])
+
+  onThemeChange(renderMermaid)
+}
+
+async function renderMath() {
+  const math = document.querySelectorAll('.math')
+  if (math.length > 0) {
+    await import('mathjax/es5/tex-svg-full.js')
+  }
+}
+
+/**
+ * Render mermaid diagrams.
+ */
+async function renderMermaid() {
+  const diagrams = document.querySelectorAll<HTMLElement>('pre code.lang-mermaid')
+  const processedDiagrams = document.querySelectorAll<HTMLElement>('pre.mermaid[data-mermaid]')
+  if (diagrams.length <= 0 && processedDiagrams.length <= 0) {
+    return
+  }
+
+  const { default: mermaid } = await import('mermaid')
+  const theme = getTheme() === 'dark' ? 'dark' : 'default'
+
+  // Turn off deterministic ids on re-render
+  const { mermaid: mermaidOptions } = await options()
+  mermaid.initialize(Object.assign({ startOnLoad: false, theme }, mermaidOptions))
+
+  const nodes = []
+  diagrams.forEach(e => {
+    // Rerender when elements becomes visible due to https://github.com/mermaid-js/mermaid/issues/1846
+    if (e.offsetParent) {
+      nodes.push(e.parentElement)
+      const code = e.innerHTML
+      e.parentElement.classList.add('mermaid')
+      e.parentElement.setAttribute('data-mermaid', code)
+      e.parentElement.innerHTML = code
+    }
+  })
+
+  processedDiagrams.forEach(e => {
+    if (e.offsetParent) {
+      e.removeAttribute('data-processed')
+      e.innerHTML = e.getAttribute('data-mermaid')
+      nodes.push(e)
+    }
+  })
+
+  await mermaid.run({ nodes })
 }
 
 /**
@@ -41,7 +94,8 @@ function renderWordBreaks() {
  * Make images in articles clickable by wrapping the image in an anchor tag.
  * The image is clickable only if its size is larger than 200x200 and it is not already been wrapped in an anchor tag.
  */
-function renderClickableImage() {
+async function renderClickableImage() {
+  const { showLightbox } = await options()
   const MIN_CLICKABLE_IMAGE_SIZE = 200
   const imageLinks = Array.from(document.querySelectorAll<HTMLImageElement>('article a img[src]'))
 
@@ -60,12 +114,25 @@ function renderClickableImage() {
       const a = document.createElement('a')
       a.target = '_blank'
       a.rel = 'noopener noreferrer nofollow'
-      a.href = img.src
-      img.replaceWith(a)
-      a.appendChild(img)
+
+      if (img.parentElement.tagName === 'PICTURE') {
+        const picture = img.parentElement
+        picture.addEventListener('click', () => {
+          a.href = img.currentSrc
+          a.click()
+        })
+      } else {
+        a.href = img.src
+        img.replaceWith(a)
+        a.appendChild(img)
+      }
     }
 
     function shouldMakeClickable(): boolean {
+      if (showLightbox) {
+        return showLightbox(img)
+      }
+
       return img.naturalWidth > MIN_CLICKABLE_IMAGE_SIZE &&
         img.naturalHeight > MIN_CLICKABLE_IMAGE_SIZE &&
         !imageLinks.includes(img)
@@ -100,6 +167,10 @@ function renderAlerts() {
  * Open external links to different host in a new window.
  */
 function renderLinks() {
+  if (meta('docfx:disablenewtab') === 'true') {
+    return
+  }
+
   document.querySelectorAll<HTMLAnchorElement>('article a[href]').forEach(a => {
     if (a.hostname !== window.location.hostname && a.innerText.trim() !== '') {
       a.target = '_blank'
@@ -110,23 +181,11 @@ function renderLinks() {
 }
 
 /**
- * Render anchor # for headings
- */
-function renderAnchor() {
-  const anchors = new AnchorJs()
-  anchors.options = {
-    visible: 'hover',
-    icon: '#'
-  }
-  anchors.add('article h2:not(.no-anchor), article h3:not(.no-anchor), article h4:not(.no-anchor)')
-}
-
-/**
  * Render code copy button.
  */
 function renderCodeCopy() {
   document.querySelectorAll<HTMLElement>('pre>code').forEach(code => {
-    if (code.innerText.trim().length === 0) {
+    if (code.textContent.trim().length === 0) {
       return
     }
 
@@ -136,7 +195,7 @@ function renderCodeCopy() {
     function renderCore() {
       const dom = copied
         ? html`<a class='btn border-0 link-success code-action'><i class='bi bi-check-lg'></i></a>`
-        : html`<a class='btn border-0 code-action' title='copy' href='#' @click=${copy}><i class='bi bi-clipboard'></i></a>`
+        : html`<a class='btn border-0 code-action' title='${loc('copy')}' href='#' @click=${copy}><i class='bi bi-clipboard'></i></a>`
       render(dom, code.parentElement)
 
       async function copy(e) {
@@ -341,6 +400,7 @@ function renderTabs() {
       }
       updateTabsQueryStringParam(state)
     }
+    notifyContentUpdated()
     const top = info.anchor.getBoundingClientRect().top
     if (top !== originalTop && event instanceof MouseEvent) {
       window.scrollTo(0, window.pageYOffset + top - originalTop)
@@ -395,5 +455,9 @@ function renderTabs() {
     document.querySelectorAll('div.tabGroup>ul>li').forEach(e => e.classList.add('nav-item'))
     document.querySelectorAll('div.tabGroup>ul>li>a').forEach(e => e.classList.add('nav-link'))
     document.querySelectorAll('div.tabGroup>section').forEach(e => e.classList.add('card'))
+  }
+
+  function notifyContentUpdated() {
+    renderMermaid()
   }
 }

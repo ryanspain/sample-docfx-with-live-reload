@@ -5,21 +5,23 @@
         "clean": "rimraf dist",
         "presetup": "npm install",
         "setup": "dotnet tool restore",
-        "build": "npm run generate-toc && dotnet docfx docs/docfx.json",
+        "build": "npm run generate-toc && dotnet docfx build docfx.json",
+        "prepreview": "npm run build",
         "preview": "npm-run-all -p -c start-nodemon start-browser-sync",
         "start-nodemon": "nodemon --on-change-only",
         "start-browser-sync": "browser-sync start",
-        "generate-toc": "dotnet DocFxTocGenerator -- -d docs -o docs -s -r"
+        "generate-toc": "dotnet DocFxTocGenerator -- --docfolder ./docs/getting-started --outputfolder ./docs/getting-started --sequence --override && dotnet DocFxTocGenerator -- --docfolder ./docs/features --outputfolder ./docs/features --sequence --override"
     },
     "nodemonConfig": {
         "watch": [
             "docs/"
         ],
+        "legacyWatch": true,
         "ignore": [
             "dist/"
         ],
         "ext": "*",
-        "exec": "dotnet docfx docs/docfx.json"
+        "exec": "dotnet docfx build ./docfx.json"
     },
     "browser-sync": {
         "server": {

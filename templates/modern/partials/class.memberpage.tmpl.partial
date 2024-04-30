@@ -2,6 +2,18 @@
 
 {{>partials/class.header}}
 
+{{#children}}
+<h2 class="section" id="{{id}}">{{>partials/classSubtitle}}</h2>
+
+{{#children}}
+<dl class="jumplist">
+  <dt><xref uid="{{uid}}" altProperty="fullName" displayProperty="name"/></dt>
+  <dd>{{{summary}}}</dd>
+</dl>
+{{/children}}
+
+{{/children}}
+
 {{#seealso.0}}
 <h2 id="seealso">{{__global.seealso}}</h2>
 <div class="seealso">

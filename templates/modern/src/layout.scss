@@ -1,12 +1,12 @@
 /**
- * Copyright (c) Microsoft Corporation. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
-*/
+ * Licensed to the .NET Foundation under one or more agreements.
+ * The .NET Foundation licenses this file to you under the MIT license.
+ */
 
 $header-height: 60px;
 $footer-height: 60px;
 $main-padding-top: 1.6rem;
-$main-padding-bottom: 4rem;
+$main-padding-bottom: 2rem;
 
 // Makes a div sticky to top
 @mixin sticky-top {
@@ -25,18 +25,18 @@ $main-padding-bottom: 4rem;
 }
 
 html {
-  width: 100vw;
+  width: calc(100vw - var(--scrollbar-width));
   min-height: 100vh;
   overflow-x: hidden;
 }
 
 body,
 body[data-layout="landing"] {
-  width: 100vw;
+  width: calc(100vw - var(--scrollbar-width));
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  
+
   >header {
     display: flex;
     align-items: stretch;
@@ -53,6 +53,7 @@ body[data-layout="landing"] {
   }
 
   >footer {
+    font-size: 14px;
     padding: 1rem 0;
     height: $footer-height;
 
@@ -69,8 +70,16 @@ body[data-layout="landing"] {
     padding-bottom: $main-padding-bottom;
 
     >.content {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+
       >:not(article) {
         display: none;
+      }
+
+      >article {
+        flex: 1;
       }
 
       @include media-breakpoint-up(md) {
@@ -86,6 +95,10 @@ body[data-layout="landing"] {
   }
 
   @media print {
+    >main {
+      padding: 0 !important;
+    }
+
     >header, >footer {
       display: none;
     }
@@ -121,19 +134,24 @@ body[data-layout="landing"] {
         >.toc-offcanvas {
           flex: .35;
           display: block;
-          overflow-x: hidden;
-          overflow-y: auto;
+          overflow: hidden;
           max-width: 360px;
-          max-height: calc(100vh - #{$header-height});
+          max-height: calc(100vh - $header-height - $main-padding-top);
 
           @include stick-to-header;
 
           @include media-breakpoint-down(md) {
             flex: 0;
           }
+
+          .offcanvas-start, .offcanvas-body {
+            height: 100%;
+          }
         }
 
         >.content {
+          display: flex;
+          flex-direction: column;
           flex: 1;
           min-width: 0;
           margin: 0 3rem;
@@ -143,17 +161,21 @@ body[data-layout="landing"] {
             display: flex;
             align-items: flex-start;
             margin-top: .5rem;
-            min-height: 40px;
           }
 
-          >.contribution {
+          article {
+            flex: 1;
+          }
+
+          >.contribution,
+          >.next-article {
             display: flex;
           }
 
           @include media-breakpoint-down(lg) {
             margin: 0 1rem;
           }
-  
+
           @include media-breakpoint-down(md) {
             margin: 0;
           }
@@ -162,7 +184,7 @@ body[data-layout="landing"] {
         >.affix {
           display: block;
           width: 230px;
-          max-height: calc(100vh - #{$header-height});
+          max-height: calc(100vh - $header-height - $main-padding-top);
           overflow-x: hidden;
           overflow-y: auto;
 

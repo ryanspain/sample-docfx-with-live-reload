@@ -1,16 +1,16 @@
 /**
- * Copyright (c) Microsoft Corporation. All Rights Reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
-*/
+ * Licensed to the .NET Foundation under one or more agreements.
+ * The .NET Foundation licenses this file to you under the MIT license.
+ */
 
-body[data-yaml-mime="ManagedReference"] article {
+body[data-yaml-mime="ManagedReference"] article, body[data-yaml-mime="ApiPage"] article {
   h1[data-uid] {
     position: relative;
     padding-right: 1.6rem;
   }
 
   h3[data-uid] {
-    position: relative;  
+    position: relative;
     font-weight: 400;
     margin-top: 3rem;
     padding-bottom: 5px;
@@ -65,8 +65,13 @@ body[data-yaml-mime="ManagedReference"] article {
   }
 
   dl.parameters {
-    >dt>code {
-      margin-right: .2em;
+    >dt {
+      margin: 1em 0;
+      
+      &>code {
+        margin-right: .2em;
+        font-size: 1em;
+      }
     }
   }
 
@@ -81,11 +86,11 @@ body[data-yaml-mime="ManagedReference"] article {
         margin-left: .25rem;
         display: inline-block;
       }
-  
+
       >dt {
         display: inline-block;
       }
-  
+
       >dt::after {
         content: ":";
       }
@@ -97,5 +102,29 @@ body[data-yaml-mime="ManagedReference"] article {
     right: 0;
     bottom: .2rem;
     font-size: 1.2rem;
+  }
+
+  @media print {
+    .header-action {
+      display: none;
+    }
+  }
+
+  td.term {
+    font-weight: 600;
+  }
+
+  summary {
+    display: block;
+    cursor: inherit;
+  }
+
+  li>span.term {
+    font-weight: 600;
+
+    &::after {
+      content: '-';
+      margin: 0 .5em;
+    }
   }
 }

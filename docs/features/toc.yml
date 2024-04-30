@@ -1,0 +1,28 @@
+# This is an automatically generated file
+items:
+- name: App page 1
+  href: page1.md
+- name: App page 2
+  href: page2.md
+- name: App page 3
+  href: page3.md
+- name: Samples
+  href: samples/index.md
+  items:
+  - name: Samples
+    href: samples/index.md
+  - name: App sample 1
+    href: samples/sample1.md
+  - name: App sample 1
+    href: samples/sample2.md
+- name: Standards
+  href: standards/index.md
+  items:
+  - name: Standards
+    href: standards/index.md
+  - name: App standard 1
+    href: standards/standard1.md
+  - name: App standard 1
+    href: standards/standard2.md
+  - name: App standard 1
+    href: standards/standard3.md

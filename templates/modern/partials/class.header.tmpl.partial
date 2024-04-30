@@ -1,4 +1,4 @@
-{{!Copyright (c) Microsoft. All rights reserved. Licensed under the MIT license. See LICENSE file in the project root for full license information.}}
+{{!Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license.}}
 
 <h1 id="{{id}}" data-uid="{{uid}}" class="text-break">
   {{>partials/title}}
@@ -7,15 +7,17 @@
 
 <div class="facts text-secondary">
   <dl><dt>{{__global.namespace}}</dt><dd>{{{namespace.specName.0.value}}}</dd></dl>
-  <dl><dt>{{__global.assembly}}</dt><dd>{{assemblies.0}}.dll</dd></dl>
+  {{#assemblies.0}}<dl><dt>{{__global.assembly}}</dt><dd>{{assemblies.0}}.dll</dd></dl>{{/assemblies.0}}
 </div>
 
 <div class="markdown summary">{{{summary}}}</div>
 <div class="markdown conceptual">{{{conceptual}}}</div>
 
+{{#syntax.content.0.value}}
 <div class="codewrapper">
-  <pre><code class="lang-{{_lang}} hljs">{{syntax.content.0.value}}</code></pre>
+  <pre><code class="lang-csharp hljs">{{syntax.content.0.value}}</code></pre>
 </div>
+{{/syntax.content.0.value}}
 
 {{#syntax.parameters.0}}
 <h4 class="section">{{__global.parameters}}</h4>
@@ -32,7 +34,7 @@
 {{#syntax.return}}
 <h4 class="section">{{__global.returns}}</h4>
 <dl class="parameters">
-  <dt>type.specName.0.value</dt>
+  <dt>{{{type.specName.0.value}}}</dt>
   <dd>{{{description}}}</dd>
 </dl>
 {{/syntax.return}}
@@ -94,7 +96,7 @@
 {{/inClass}}
 
 {{#inheritedMembers.0}}
-<dl class="typelist derived">
+<dl class="typelist inheritedMembers">
   <dt>{{__global.inheritedMembers}}</dt>
   <dd>
 {{/inheritedMembers.0}}

@@ -1,12 +1,14 @@
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 import 'bootstrap'
+import { options } from './helper'
 import { highlight } from './highlight'
 import { renderMarkdown } from './markdown'
 import { enableSearch } from './search'
 import { renderToc } from './toc'
-import { renderBreadcrumb, renderFooter, renderInThisArticle, renderNavbar } from './nav'
+import { initTheme } from './theme'
+import { renderBreadcrumb, renderInThisArticle, renderNavbar } from './nav'
 
 import 'bootstrap-icons/font/bootstrap-icons.scss'
 import './docfx.scss'
@@ -17,22 +19,39 @@ declare global {
       ready?: boolean,
       searchReady?: boolean,
       searchResultReady?: boolean,
-    };
+    }
   }
 }
 
-window.docfx = {}
+async function init() {
+  window.docfx = window.docfx || {}
 
-document.addEventListener('DOMContentLoaded', function() {
-  highlight()
-  enableSearch()
+  const { start } = await options()
+  start?.()
 
-  renderMarkdown()
-  renderFooter()
+  const pdfmode = navigator.userAgent.indexOf('docfx/pdf') >= 0
+  if (pdfmode) {
+    await Promise.all([
+      renderMarkdown(),
+      highlight()
+    ])
+  } else {
+    await Promise.all([
+      initTheme(),
+      enableSearch(),
+      renderInThisArticle(),
+      renderMarkdown(),
+      renderNav(),
+      highlight()
+    ])
+  }
 
-  Promise.all([renderNavbar(), renderToc()])
-    .then(([navbar, toc]) => renderBreadcrumb([...navbar, ...toc]))
-
-  renderInThisArticle()
   window.docfx.ready = true
-})
+
+  async function renderNav() {
+    const [navbar, toc] = await Promise.all([renderNavbar(), renderToc()])
+    renderBreadcrumb([...navbar, ...toc])
+  }
+}
+
+init().catch(console.error)

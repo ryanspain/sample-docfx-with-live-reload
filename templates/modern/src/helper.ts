@@ -1,7 +1,12 @@
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 import { html, TemplateResult } from 'lit-html'
+import { DocfxOptions } from './options'
+
+export async function options(): Promise<DocfxOptions> {
+  return await import('./main.js').then(m => m.default) as DocfxOptions
+}
 
 /**
  * Get the value of an HTML meta tag.
@@ -11,9 +16,27 @@ export function meta(name: string): string {
 }
 
 /**
+ * Gets the localized text.
+ * @param id key in token.json
+ * @param args arguments to replace in the localized text
+ */
+export function loc(id: string, args?: { [key: string]: string }): string {
+  let result = meta(`loc:${id}`) || id
+  if (args) {
+    for (const key in args) {
+      result = result.replace(`{${key}}`, args[key])
+    }
+  }
+  return result
+}
+
+/**
  * Add <wbr> into long word.
  */
-export function breakWord(text: string): string[] {
+export function breakWord(text?: string): string[] {
+  if (!text) {
+    return []
+  }
   const regex = /([a-z0-9])([A-Z]+[a-z])|([a-zA-Z0-9][.,/<>_])/g
   const result = []
   let start = 0
@@ -35,7 +58,7 @@ export function breakWord(text: string): string[] {
 /**
  * Add <wbr> into long word.
  */
-export function breakWordLit(text: string): TemplateResult {
+export function breakWordLit(text?: string): TemplateResult {
   const result = []
   breakWord(text).forEach(word => {
     if (result.length > 0) {
@@ -44,4 +67,28 @@ export function breakWordLit(text: string): TemplateResult {
     result.push(html`${word}`)
   })
   return html`${result}`
+}
+
+/**
+ * Check if the url is external.
+ * @param url The url to check.
+ * @returns True if the url is external.
+ */
+export function isExternalHref(url: URL): boolean {
+  return url.hostname !== window.location.hostname || url.protocol !== window.location.protocol
+}
+
+/**
+ * Determines if two URLs should be considered the same.
+ */
+export function isSameURL(a: { pathname: string }, b: { pathname: string }): boolean {
+  return normalizeUrlPath(a) === normalizeUrlPath(b)
+
+  function normalizeUrlPath(url: { pathname: string }): string {
+    return url.pathname
+      .replace(/\/index\.html$/gi, '/')
+      .replace(/\.html$/gi, '')
+      .replace(/\/$/gi, '')
+      .toLowerCase()
+  }
 }
