@@ -8,8 +8,8 @@ A sample `docfx` static site with live reload. The live reload works by using `n
 
 ## Pre-requisites
 
-- .NET SDK (6.x+)
-- NodeJS (16.x.x+)
+- .NET SDK (8.x+)
+- NodeJS (18.x.x+)
 
 ## Getting started
 
